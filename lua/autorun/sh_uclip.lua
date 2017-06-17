@@ -50,14 +50,13 @@ end
 -- Check if a player is stuck in an object or in the world.
 -- Returns true and ent they're stuck on if they're stuck.
 function isStuck( ply, filter )
-	local ang = ply:EyeAngles()
 	local directions = {
-		ang:Right(),
-		ang:Right() * -1,
-		ang:Forward(),
-		ang:Forward() * -1,
-		ang:Up(),
-		ang:Up() * -1,
+		Vector(1, 0, 0),
+		Vector(-1, 0, 0),
+		Vector(0, 1, 0),
+		Vector(0, -1, 0),
+		Vector(0, 0, 1),
+		Vector(0, 0, -1),
 	}
 	local ents = {}
 
@@ -86,7 +85,7 @@ end
 
 -- This function allows us to get the player's *attempted* velocity (incase we're overriding their *actual* velocity).
 local sv_noclipspeed = GetConVar( "sv_noclipspeed" )
-function getNoclipVel( ply )
+function getNoclipVel( ply, angs )
 
 	local noclipspeed = sv_noclipspeed:GetFloat() * 100
 
@@ -109,8 +108,8 @@ function getNoclipVel( ply )
 
 	local vel = Vector( 0, 0, 0 )
 
-	vel = vel + ( ply:EyeAngles():Forward() * ( forwardnum - backnum ) ) -- Forward and back
-	vel = vel + ( ply:EyeAngles():Right() * ( rightnum - leftnum ) ) -- Left and right
+	vel = vel + ( angs:Forward() * ( forwardnum - backnum ) ) -- Forward and back
+	vel = vel + ( angs:Right() * ( rightnum - leftnum ) ) -- Left and right
 	vel = vel + ( Vector( 0, 0, 1 ) * jumpnum ) -- Up
 	vel = vel:GetNormalized()
 	vel = vel * noclipspeed
@@ -198,7 +197,7 @@ function move( ply, move )
 	if adminCheck( ply ) then return end -- They can go through everything..
 
 	local ft = FrameTime()
-	local vel = getNoclipVel( ply ) -- How far are they trying to move this frame?
+	local vel = getNoclipVel( ply, move:GetAngles() ) -- How far are they trying to move this frame?
 
 	override_velocity = vel
 
