@@ -9,21 +9,21 @@ function updateOwnership( ply, ent )
 end
 
 -- Here's where the server notifies us of a new passable state. We need this for c-side prediction
-function rcvOwnershipUpdate( um )
-	local ent = um:ReadEntity()
+function rcvOwnershipUpdate(len)
+	local ent = net.ReadEntity()
 	if not ent or not ent:IsValid() then return end
 	
 	updateOwnership( LocalPlayer(), ent ) -- So it sets up the table if we don't have it already
-	local owns = um:ReadBool()
+	local owns = net.ReadBool()
 	if owns == false then -- More convienent to store as nil, takes less memory!
 		owns = nil
 	end
 	
 	ent.Uclip[ LocalPlayer() ] = owns
 end
-usermessage.Hook( "UclipOwnershipUpdate", rcvOwnershipUpdate )
+net.Receive("UclipOwnershipUpdate", rcvOwnershipUpdate)
 
-function rcvNoProtection( um )
+function rcvNoProtection(len)
 	noProtection = true
 end
-usermessage.Hook( "UclipNoProtection", rcvNoProtection )
+net.Receive("UclipOwnershipUpdate", rcvNoProtection)
