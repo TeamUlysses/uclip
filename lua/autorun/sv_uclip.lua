@@ -2,6 +2,8 @@
 module( "Uclip", package.seeall )
 if not SERVER then return end
 
+util.AddNetworkString("UclipOwnershipUpdate")
+
 hasCPPI = false -- Common Prop Protection Interface to check for ownership
 
 -- We'll check status of protectors in this init
@@ -10,8 +12,8 @@ function initUclip()
 	
 	if not hasCPPI then
 		noProtection = true
-		umsg.Start( "UclipNoProtection" ) -- In case there's anyone connected right now.
-		umsg.End()
+		net.Start("UclipOwnershipUpdate")
+		net.Broadcast()
 	end
 end
 hook.Add( "Initialize", "UclipInitialize", initUclip )
@@ -19,8 +21,8 @@ hook.Add( "Initialize", "UclipInitialize", initUclip )
 -- Tell them there's no prop protection in the event there isn't.
 function initialSpawn( ply )
 	if noProtection then
-		umsg.Start( "UclipNoProtection", ply )
-		umsg.End()
+		net.Start("UclipOwnershipUpdate")
+		net.Send(ply)
 	end
 end
 hook.Add( "PlayerInitialSpawn", "UclipInitialSpawn", initialSpawn )
@@ -41,9 +43,9 @@ function updateOwnership( ply, ent )
 	
 	if ent.Uclip[ ply ] ~= owns then
 		ent.Uclip[ ply ] = owns
-		umsg.Start( "UclipOwnershipUpdate", ply )
-			umsg.Entity( ent )
-			umsg.Bool( owns )
-		umsg.End()
+		net.Start("UclipOwnershipUpdate")
+		net.WriteEntity(ent)
+		net.WriteBool(owns)
+		net.Send(ply)
 	end
 end
